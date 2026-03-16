@@ -59,9 +59,270 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* ===== IP MANAGEMENT STYLES ===== */
+        .ip-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(15, 23, 42, 0.97);
+            backdrop-filter: blur(12px);
+        }
+        .ip-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid rgba(99,102,241,0.3);
+            border-radius: 20px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(99,102,241,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .ip-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(99,102,241,0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .ip-input {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1.5px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            color: #f1f5f9;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        .ip-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+        }
+        .ip-btn {
+            width: 100%;
+            padding: 0.85rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            margin-top: 0.75rem;
+        }
+        .ip-btn-primary {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99,102,241,0.4);
+        }
+        .ip-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.5); }
+        .ip-btn-primary:active { transform: translateY(0); }
+        .ip-btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        .ip-btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+        .ip-error {
+            color: #f87171;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-top: 0.5rem;
+            min-height: 1.2rem;
+        }
+        /* Admin Panel */
+        #admin-panel {
+            position: fixed; inset: 0; z-index: 9998;
+            background: rgba(15,23,42,0.98);
+            backdrop-filter: blur(8px);
+            overflow-y: auto;
+            display: none;
+        }
+        .admin-wrap {
+            max-width: 750px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+        .admin-card {
+            background: #1e293b;
+            border: 1px solid rgba(99,102,241,0.25);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .ip-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .ip-badge {
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #a5b4fc;
+            background: rgba(99,102,241,0.12);
+            padding: 2px 10px;
+            border-radius: 6px;
+            min-width: 130px;
+        }
+        .ip-name-tag {
+            flex: 1;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        .status-badge {
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .status-accept { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+        .status-block  { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+        .status-pending { background: rgba(250,204,21,0.15); color: #facc15; border: 1px solid rgba(250,204,21,0.3); }
+        .mini-btn {
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .mini-btn:hover { opacity: 0.82; }
+        /* Blocked page */
+        #blocked-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: linear-gradient(135deg, #0f172a, #1a0a2e);
+            align-items: center; justify-content: center;
+            display: none;
+        }
+        #blocked-overlay.active { display: flex; }
+        /* Block scroll khi overlay đang hiện */
+        body.overlay-active {
+            overflow: hidden;
+        }
+        /* Admin toggle button */
+        #admin-toggle-btn {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            background: rgba(99,102,241,0.2);
+            border: 1px solid rgba(99,102,241,0.4);
+            color: #a5b4fc;
+            border-radius: 50%;
+            width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            z-index: 5000;
+            transition: all 0.2s;
+            font-size: 1.2rem;
+        }
+        #admin-toggle-btn:hover { background: rgba(99,102,241,0.4); color: white; transform: scale(1.05); }
     </style>
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-800 font-sans flex flex-col items-center py-6 px-4">
+
+    <!-- ===== BLOCKED OVERLAY ===== -->
+    <div id="blocked-overlay" style="display:none;">
+        <div class="text-center px-4">
+            <div style="font-size:5rem;margin-bottom:1rem;">🚫</div>
+            <h1 style="color:#f87171;font-size:2rem;font-weight:900;margin-bottom:0.5rem;">Truy cập bị chặn</h1>
+            <p style="color:#94a3b8;font-size:1rem;margin-bottom:1.5rem;">IP của bạn đã bị khóa bởi quản trị viên.</p>
+            <div id="blocked-ip-name" style="color:#fca5a5;font-size:1.1rem;font-weight:600;padding:0.5rem 1.5rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;display:inline-block;"></div>
+            <p style="color:#475569;font-size:0.8rem;margin-top:2rem;">Liên hệ quản trị viên để được cấp quyền truy cập.</p>
+        </div>
+    </div>
+
+    <!-- ===== PASSWORD OVERLAY ===== -->
+    <div id="password-overlay" class="ip-overlay">
+        <div class="ip-card">
+            <div style="text-align:center;margin-bottom:1.5rem;">
+                <div style="font-size:3rem;margin-bottom:0.5rem;">📚</div>
+                <h2 style="color:#e2e8f0;font-size:1.4rem;font-weight:800;margin-bottom:0.25rem;">Sinh Học 12 - Ôn Thi</h2>
+                <p style="color:#64748b;font-size:0.9rem;">Nhập mật khẩu để truy cập tài liệu</p>
+            </div>
+            <div id="pw-ip-info" style="text-align:center;margin-bottom:1rem;font-size:0.78rem;color:#475569;"></div>
+            <input type="password" id="lesson-pw-input" class="ip-input" placeholder="Nhập mật khẩu..." onkeydown="if(event.key==='Enter')checkLessonPassword()" />
+            <div id="lesson-pw-error" class="ip-error"></div>
+            <button class="ip-btn ip-btn-primary" onclick="checkLessonPassword()">🔓 Truy cập</button>
+        </div>
+    </div>
+
+    <!-- ===== ADMIN LOGIN OVERLAY ===== -->
+    <div id="admin-login-overlay" class="ip-overlay" style="display:none;">
+        <div class="ip-card">
+            <div style="text-align:center;margin-bottom:1.5rem;">
+                <div style="font-size:2.5rem;margin-bottom:0.5rem;">🛡️</div>
+                <h2 style="color:#e2e8f0;font-size:1.3rem;font-weight:800;">Quản Trị Viên</h2>
+                <p style="color:#64748b;font-size:0.85rem;">Nhập mật khẩu admin để tiếp tục</p>
+            </div>
+            <input type="password" id="admin-pw-input" class="ip-input" placeholder="Mật khẩu admin..." onkeydown="if(event.key==='Enter')checkAdminPassword()" />
+            <div id="admin-pw-error" class="ip-error"></div>
+            <button class="ip-btn ip-btn-primary" onclick="checkAdminPassword()">🔐 Đăng nhập</button>
+            <button class="ip-btn" style="background:rgba(255,255,255,0.05);color:#64748b;margin-top:0.5rem;" onclick="document.getElementById('admin-login-overlay').style.display='none'">Hủy</button>
+        </div>
+    </div>
+
+    <!-- ===== ADMIN PANEL ===== -->
+    <div id="admin-panel">
+        <div class="admin-wrap">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+                <div>
+                    <h1 style="color:#e2e8f0;font-size:1.6rem;font-weight:900;margin:0;">🛡️ Quản Lý IP</h1>
+                    <p style="color:#475569;font-size:0.85rem;margin:0.25rem 0 0;">Quản lý truy cập theo địa chỉ IP</p>
+                </div>
+                <button onclick="closeAdminPanel()" style="background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.4);color:#a5b4fc;padding:0.5rem 1.25rem;border-radius:10px;cursor:pointer;font-weight:600;">✕ Đóng</button>
+            </div>
+
+            <!-- Current IP -->
+            <div class="admin-card">
+                <p style="color:#94a3b8;font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.75rem;">IP Của Bạn</p>
+                <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+                    <span id="admin-my-ip" class="ip-badge" style="font-size:1rem;">Đang tải...</span>
+                    <span id="admin-my-status" class="status-badge status-accept">ACCEPT</span>
+                </div>
+            </div>
+
+            <!-- Add / Edit IP -->
+            <div class="admin-card">
+                <p style="color:#94a3b8;font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.75rem;">Thêm / Cập nhật IP</p>
+                <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                    <input id="admin-ip-input" type="text" placeholder="Địa chỉ IP (vd: 192.168.1.1)" style="flex:2;min-width:160px;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:0.6rem 0.9rem;color:#f1f5f9;outline:none;font-size:0.9rem;" />
+                    <input id="admin-name-input" type="text" placeholder="Tên/Ghi chú" style="flex:2;min-width:140px;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:0.6rem 0.9rem;color:#f1f5f9;outline:none;font-size:0.9rem;" />
+                    <select id="admin-status-select" style="flex:1;min-width:110px;background:#1e293b;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:0.6rem 0.9rem;color:#f1f5f9;outline:none;font-size:0.9rem;">
+                        <option value="accept">✅ Accept</option>
+                        <option value="block">🚫 Block</option>
+                    </select>
+                    <button onclick="adminAddIP()" class="ip-btn ip-btn-primary" style="flex:none;width:auto;padding:0.6rem 1.25rem;margin-top:0;">Lưu</button>
+                </div>
+                <div id="admin-add-error" class="ip-error" style="text-align:left;"></div>
+            </div>
+
+            <!-- IP List -->
+            <div class="admin-card">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+                    <p style="color:#94a3b8;font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin:0;">Danh Sách IP (<span id="ip-count">0</span>)</p>
+                    <button onclick="renderAdminIPList()" style="background:transparent;border:none;color:#6366f1;cursor:pointer;font-size:0.85rem;font-weight:600;">🔄 Làm mới</button>
+                </div>
+                <div id="admin-ip-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Toggle Button -->
+    <div id="admin-toggle-btn" onclick="openAdminLogin()" title="Quản trị viên">⚙️</div>
 
     <!-- Header & Categories -->
     <div class="w-full max-w-3xl mb-6 text-center space-y-4">
@@ -667,8 +928,257 @@
             if (e.key === 'ArrowLeft') handlePrev();
         });
 
+        // ========================================
+        // ===== IP MANAGEMENT SYSTEM =============
+        // ========================================
+
+        const LESSON_PASSWORD = 'leaklamgay';
+        const ADMIN_PASSWORD = '889082';
+        const IP_STORAGE_KEY = 'sinh_ip_manager';
+
+        // Lưu/Load dữ liệu IP từ localStorage
+        function loadIPData() {
+            try {
+                return JSON.parse(localStorage.getItem(IP_STORAGE_KEY)) || {};
+            } catch(e) { return {}; }
+        }
+        function saveIPData(data) {
+            localStorage.setItem(IP_STORAGE_KEY, JSON.stringify(data));
+        }
+
+        // Lấy IP thực của người dùng
+        let currentIP = null;
+        async function fetchIP() {
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                return data.ip;
+            } catch(e) {
+                try {
+                    const res2 = await fetch('https://api4.my-ip.io/v2/ip.json');
+                    const d2 = await res2.json();
+                    return d2.ip;
+                } catch(e2) {
+                    return 'unknown-' + Math.random().toString(36).substr(2,5);
+                }
+            }
+        }
+
+        // Khởi tạo hệ thống IP
+        async function initIPSystem() {
+            // Chặn scroll ngay khi đang kiểm tra
+            document.body.style.overflow = 'hidden';
+
+            currentIP = await fetchIP();
+            const ipData = loadIPData();
+
+            // Hiển thị IP trên màn hình mật khẩu
+            const pwIpInfo = document.getElementById('pw-ip-info');
+            if (pwIpInfo) pwIpInfo.textContent = 'IP của bạn: ' + currentIP;
+
+            // Nếu IP chưa có trong danh sách, tự thêm với status pending
+            if (!ipData[currentIP]) {
+                ipData[currentIP] = {
+                    name: '',
+                    status: 'pending',
+                    firstSeen: new Date().toISOString(),
+                    lastSeen: new Date().toISOString()
+                };
+                saveIPData(ipData);
+            } else {
+                ipData[currentIP].lastSeen = new Date().toISOString();
+                saveIPData(ipData);
+            }
+
+            // Kiểm tra trạng thái IP
+            const entry = ipData[currentIP];
+            if (entry.status === 'block') {
+                // Hiện trang bị chặn
+                document.getElementById('password-overlay').style.display = 'none';
+                showBlockedPage(entry.name || currentIP);
+                return;
+            }
+
+            // Kiểm tra session đã mở mật khẩu chưa
+            if (sessionStorage.getItem('sinh_access') === '1') {
+                unlockApp();
+            }
+        }
+
+        function showBlockedPage(name) {
+            document.getElementById('password-overlay').style.display = 'none';
+            const el = document.getElementById('blocked-overlay');
+            el.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            const nameEl = document.getElementById('blocked-ip-name');
+            if (nameEl) nameEl.textContent = name ? ('🚫 ' + name) : ('IP: ' + currentIP);
+        }
+
+        function checkLessonPassword() {
+            const val = document.getElementById('lesson-pw-input').value.trim();
+            const errEl = document.getElementById('lesson-pw-error');
+            if (val === LESSON_PASSWORD) {
+                errEl.textContent = '';
+                sessionStorage.setItem('sinh_access', '1');
+                // Đánh dấu IP là accepted khi nhập đúng mật khẩu
+                const ipData = loadIPData();
+                if (ipData[currentIP] && ipData[currentIP].status === 'pending') {
+                    ipData[currentIP].status = 'accept';
+                    saveIPData(ipData);
+                }
+                unlockApp();
+            } else {
+                errEl.textContent = '❌ Mật khẩu không đúng. Thử lại!';
+                document.getElementById('lesson-pw-input').value = '';
+                document.getElementById('lesson-pw-input').focus();
+            }
+        }
+
+        function unlockApp() {
+            document.getElementById('password-overlay').style.display = 'none';
+            document.getElementById('admin-toggle-btn').style.display = 'flex';
+            // Cho phép scroll lại sau khi vào bài
+            document.body.style.overflow = '';
+        }
+
+        // ===== ADMIN FUNCTIONS =====
+        function openAdminLogin() {
+            document.getElementById('admin-login-overlay').style.display = 'flex';
+            document.getElementById('admin-pw-input').value = '';
+            document.getElementById('admin-pw-error').textContent = '';
+            setTimeout(() => document.getElementById('admin-pw-input').focus(), 100);
+        }
+
+        function checkAdminPassword() {
+            const val = document.getElementById('admin-pw-input').value;
+            if (val === ADMIN_PASSWORD) {
+                document.getElementById('admin-login-overlay').style.display = 'none';
+                openAdminPanel();
+            } else {
+                document.getElementById('admin-pw-error').textContent = '❌ Sai mật khẩu admin!';
+                document.getElementById('admin-pw-input').value = '';
+            }
+        }
+
+        function openAdminPanel() {
+            const panel = document.getElementById('admin-panel');
+            panel.style.display = 'block';
+            // Hiển thị IP hiện tại
+            document.getElementById('admin-my-ip').textContent = currentIP || 'Đang tải...';
+            const ipData = loadIPData();
+            const entry = ipData[currentIP] || {};
+            const statusEl = document.getElementById('admin-my-status');
+            statusEl.textContent = (entry.status || 'pending').toUpperCase();
+            statusEl.className = 'status-badge status-' + (entry.status || 'pending');
+            renderAdminIPList();
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('admin-panel').style.display = 'none';
+        }
+
+        function renderAdminIPList() {
+            const ipData = loadIPData();
+            const list = document.getElementById('admin-ip-list');
+            const count = document.getElementById('ip-count');
+            const entries = Object.entries(ipData);
+            count.textContent = entries.length;
+
+            if (entries.length === 0) {
+                list.innerHTML = '<p style="color:#475569;text-align:center;padding:1rem;">Chưa có IP nào.</p>';
+                return;
+            }
+
+            // Sắp xếp: block trước, pending, accept sau
+            entries.sort((a, b) => {
+                const order = { block: 0, pending: 1, accept: 2 };
+                return (order[a[1].status] || 1) - (order[b[1].status] || 1);
+            });
+
+            list.innerHTML = entries.map(([ip, info]) => {
+                const isCurrent = ip === currentIP;
+                const statusClass = 'status-' + (info.status || 'pending');
+                const statusText = (info.status || 'pending') === 'accept' ? '✅ ACCEPT'
+                    : (info.status === 'block' ? '🚫 BLOCK' : '⏳ PENDING');
+                const lastSeen = info.lastSeen ? new Date(info.lastSeen).toLocaleString('vi-VN') : '--';
+
+                return `
+                    <div class="ip-row" id="row-${ip.replace(/[.:]/g, '_')}">
+                        <span class="ip-badge">${ip}${isCurrent ? ' <span style="color:#fbbf24;font-size:0.7rem;">(bạn)</span>' : ''}</span>
+                        <span class="ip-name-tag">${info.name ? '👤 ' + info.name : '<em style="color:#334155;">Chưa đặt tên</em>'}</span>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                            <button class="mini-btn" style="background:rgba(99,102,241,0.2);color:#a5b4fc;" onclick="adminEditName('${ip}')">✏️ Tên</button>
+                            ${info.status !== 'accept' ? `<button class="mini-btn ip-btn-success" onclick="adminSetStatus('${ip}','accept')">✅</button>` : ''}
+                            ${info.status !== 'block' ? `<button class="mini-btn ip-btn-danger" onclick="adminSetStatus('${ip}','block')">🚫</button>` : ''}
+                            <button class="mini-btn" style="background:rgba(239,68,68,0.1);color:#f87171;" onclick="adminDeleteIP('${ip}')">🗑️</button>
+                        </div>
+                        <div style="width:100%;font-size:0.72rem;color:#334155;">Lần cuối: ${lastSeen}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function adminAddIP() {
+            const ip = document.getElementById('admin-ip-input').value.trim();
+            const name = document.getElementById('admin-name-input').value.trim();
+            const status = document.getElementById('admin-status-select').value;
+            const errEl = document.getElementById('admin-add-error');
+
+            if (!ip) { errEl.textContent = '⚠️ Vui lòng nhập địa chỉ IP.'; return; }
+            errEl.textContent = '';
+
+            const ipData = loadIPData();
+            if (!ipData[ip]) {
+                ipData[ip] = { name: name, status: status, firstSeen: new Date().toISOString(), lastSeen: new Date().toISOString() };
+            } else {
+                if (name) ipData[ip].name = name;
+                ipData[ip].status = status;
+            }
+            saveIPData(ipData);
+            document.getElementById('admin-ip-input').value = '';
+            document.getElementById('admin-name-input').value = '';
+            renderAdminIPList();
+            showToast('✅ Đã lưu IP ' + ip);
+        }
+
+        function adminSetStatus(ip, status) {
+            const ipData = loadIPData();
+            if (!ipData[ip]) ipData[ip] = { name: '', status: 'pending', firstSeen: new Date().toISOString(), lastSeen: new Date().toISOString() };
+            ipData[ip].status = status;
+            saveIPData(ipData);
+            renderAdminIPList();
+            showToast((status === 'block' ? '🚫 Đã block' : '✅ Đã accept') + ' IP: ' + ip);
+        }
+
+        function adminEditName(ip) {
+            const ipData = loadIPData();
+            const current = ipData[ip] ? ipData[ip].name : '';
+            const newName = prompt('Nhập tên/ghi chú cho IP ' + ip + ':', current);
+            if (newName === null) return;
+            if (!ipData[ip]) ipData[ip] = { name: '', status: 'pending', firstSeen: new Date().toISOString(), lastSeen: new Date().toISOString() };
+            ipData[ip].name = newName.trim();
+            saveIPData(ipData);
+            renderAdminIPList();
+            showToast('✅ Đã cập nhật tên cho ' + ip);
+        }
+
+        function adminDeleteIP(ip) {
+            if (!confirm('Xóa IP ' + ip + ' khỏi danh sách?')) return;
+            const ipData = loadIPData();
+            delete ipData[ip];
+            saveIPData(ipData);
+            renderAdminIPList();
+            showToast('🗑️ Đã xóa IP: ' + ip);
+        }
+
         // Initialize App
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Ẩn nút admin mặc định
+            document.getElementById('admin-toggle-btn').style.display = 'none';
+            // Khởi tạo hệ thống IP (kiểm tra IP trước)
+            await initIPSystem();
+            // Render app
             renderApp();
             lucide.createIcons();
         });
