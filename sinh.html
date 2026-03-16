@@ -956,6 +956,36 @@
         const IP_STORAGE_KEY = 'sinh_ip_manager';
         const DEVICE_ID_KEY  = 'sinh_device_id';
 
+        // IP admin được hardcode - luôn luôn accept, không bị block bao giờ
+        const ADMIN_IPS = {
+            '27.79.122.118': { name: '👑 Admin - Máy chủ', status: 'accept' }
+        };
+
+        // Đảm bảo các ADMIN_IPS luôn tồn tại & đúng trạng thái trong storage
+        function ensureAdminIPs(ipData) {
+            let changed = false;
+            for (const [ip, meta] of Object.entries(ADMIN_IPS)) {
+                if (!ipData[ip]) {
+                    ipData[ip] = {
+                        name: meta.name,
+                        status: meta.status,
+                        isAdmin: true,
+                        firstSeen: new Date().toISOString(),
+                        lastSeen: new Date().toISOString()
+                    };
+                    changed = true;
+                } else {
+                    // Đảm bảo admin không bị block
+                    if (ipData[ip].status === 'block') {
+                        ipData[ip].status = 'accept';
+                        changed = true;
+                    }
+                    ipData[ip].isAdmin = true;
+                }
+            }
+            return changed;
+        }
+
         // Lưu/Load dữ liệu IP từ localStorage
         function loadIPData() {
             try {
@@ -1030,6 +1060,9 @@
 
             currentIP = await fetchIP();
             const ipData = loadIPData();
+
+            // Đảm bảo IP admin luôn được set đúng
+            if (ensureAdminIPs(ipData)) saveIPData(ipData);
 
             // Hiển thị IP + DeviceId trên màn hình mật khẩu
             const pwIpInfo = document.getElementById('pw-ip-info');
@@ -1231,23 +1264,29 @@
                 const deviceBadge = info.deviceId
                     ? `<span class="hostname-badge" title="Device ID">💻 ${info.deviceId}</span>`
                     : `<span style="font-size:0.72rem;color:#475569;">📡 Chưa có Device ID</span>`;
+                const isAdminIP = !!ADMIN_IPS[ip];
+                const adminBadge = isAdminIP
+                    ? `<span style="background:rgba(251,191,36,0.2);color:#fbbf24;border:1px solid rgba(251,191,36,0.4);padding:2px 8px;border-radius:6px;font-size:0.72rem;font-weight:700;">👑 ADMIN</span>`
+                    : '';
 
                 return `
-                    <div class="ip-row" id="row-${ip.replace(/[.:]/g, '_')}">
+                    <div class="ip-row" id="row-${ip.replace(/[.:]/g, '_')}" style="${isAdminIP ? 'border-color:rgba(251,191,36,0.35);background:rgba(251,191,36,0.04);' : ''}">
                         <span class="ip-badge">${ip}${isCurrent ? ' <span style="color:#fbbf24;font-size:0.7rem;">(bạn)</span>' : ''}</span>
+                        ${adminBadge}
                         ${deviceBadge}
                         <span class="ip-name-tag">${info.name ? '👤 ' + info.name : '<em style="color:#334155;">Chưa đặt tên</em>'}</span>
                         <span class="status-badge ${statusClass}">${statusText}</span>
                         <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
                             <button class="mini-btn" style="background:rgba(99,102,241,0.2);color:#a5b4fc;" onclick="adminEditName('${ip}')">✏️ Tên</button>
                             ${info.status !== 'accept' ? `<button class="mini-btn ip-btn-success" onclick="adminSetStatus('${ip}','accept')">✅</button>` : ''}
-                            ${info.status !== 'block' ? `<button class="mini-btn ip-btn-danger" onclick="adminSetStatus('${ip}','block')">🚫</button>` : ''}
-                            <button class="mini-btn" style="background:rgba(239,68,68,0.1);color:#f87171;" onclick="adminDeleteIP('${ip}')">🗑️</button>
+                            ${(info.status !== 'block' && !isAdminIP) ? `<button class="mini-btn ip-btn-danger" onclick="adminSetStatus('${ip}','block')">🚫</button>` : ''}
+                            ${!isAdminIP ? `<button class="mini-btn" style="background:rgba(239,68,68,0.1);color:#f87171;" onclick="adminDeleteIP('${ip}')">🗑️</button>` : ''}
                         </div>
                         <div style="width:100%;font-size:0.72rem;color:#334155;">Lần cuối: ${lastSeen}</div>
                     </div>
                 `;
             }).join('');
+
         }
 
         function adminAddIP() {
