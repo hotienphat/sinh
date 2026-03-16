@@ -176,6 +176,19 @@
             border-radius: 6px;
             min-width: 130px;
         }
+        .hostname-badge {
+            font-family: monospace;
+            font-size: 0.78rem;
+            color: #67e8f9;
+            background: rgba(6,182,212,0.1);
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(6,182,212,0.25);
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
         .ip-name-tag {
             flex: 1;
             color: #94a3b8;
@@ -280,19 +293,25 @@
         <div class="admin-wrap">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
                 <div>
-                    <h1 style="color:#e2e8f0;font-size:1.6rem;font-weight:900;margin:0;">🛡️ Quản Lý IP</h1>
-                    <p style="color:#475569;font-size:0.85rem;margin:0.25rem 0 0;">Quản lý truy cập theo địa chỉ IP</p>
+                    <h1 style="color:#e2e8f0;font-size:1.6rem;font-weight:900;margin:0;">🛡️ Quản Lý IP & Máy</h1>
+                    <p style="color:#475569;font-size:0.85rem;margin:0.25rem 0 0;">Quản lý truy cập theo IP + Tên máy</p>
                 </div>
                 <button onclick="closeAdminPanel()" style="background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.4);color:#a5b4fc;padding:0.5rem 1.25rem;border-radius:10px;cursor:pointer;font-weight:600;">✕ Đóng</button>
             </div>
 
-            <!-- Current IP -->
+            <!-- Current IP + Hostname -->
             <div class="admin-card">
-                <p style="color:#94a3b8;font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.75rem;">IP Của Bạn</p>
+                <p style="color:#94a3b8;font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.75rem;">Thiết Bị Của Bạn</p>
                 <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
                     <span id="admin-my-ip" class="ip-badge" style="font-size:1rem;">Đang tải...</span>
+                    <span id="admin-my-hostname" class="hostname-badge">💻 ...</span>
                     <span id="admin-my-status" class="status-badge status-accept">ACCEPT</span>
                 </div>
+                <div style="margin-top:0.75rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    <button onclick="adminResetMyIP()" style="background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);color:#fbbf24;padding:0.4rem 1rem;border-radius:8px;cursor:pointer;font-size:0.82rem;font-weight:600;">🔄 Reset IP (đổi mạng)</button>
+                    <button onclick="adminResetDeviceId()" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;padding:0.4rem 1rem;border-radius:8px;cursor:pointer;font-size:0.82rem;font-weight:600;">⚠️ Reset cả máy & IP</button>
+                </div>
+                <p style="color:#334155;font-size:0.75rem;margin-top:0.5rem;margin-bottom:0;">💡 Nếu đổi WiFi/mạng: nhấn "Reset IP" để hệ thống nhận IP mới từ tên máy này.</p>
             </div>
 
             <!-- Add / Edit IP -->
@@ -935,6 +954,7 @@
         const LESSON_PASSWORD = 'leaklamgay';
         const ADMIN_PASSWORD = '889082';
         const IP_STORAGE_KEY = 'sinh_ip_manager';
+        const DEVICE_ID_KEY  = 'sinh_device_id';
 
         // Lưu/Load dữ liệu IP từ localStorage
         function loadIPData() {
@@ -944,6 +964,45 @@
         }
         function saveIPData(data) {
             localStorage.setItem(IP_STORAGE_KEY, JSON.stringify(data));
+        }
+
+        // ── Tên máy / Device ID ──────────────────────────────────────
+        // Trình duyệt không cho phép đọc hostname máy tính trực tiếp.
+        // Thay vào đó ta tạo một Device ID ổn định lưu trong localStorage
+        // và cho admin đặt tên dễ đọc (vd "Máy HP của Trang").
+        // Device ID không đổi dù đổi mạng/IP.
+        function getOrCreateDeviceId() {
+            let did = localStorage.getItem(DEVICE_ID_KEY);
+            if (!did) {
+                // Tạo fingerprint từ userAgent + màn hình + timezone
+                const raw = [
+                    navigator.userAgent,
+                    screen.width + 'x' + screen.height,
+                    screen.colorDepth,
+                    Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    navigator.language,
+                    navigator.hardwareConcurrency || ''
+                ].join('|');
+                // Hash đơn giản (djb2)
+                let hash = 5381;
+                for (let i = 0; i < raw.length; i++) {
+                    hash = ((hash << 5) + hash) ^ raw.charCodeAt(i);
+                    hash = hash >>> 0; // convert to uint32
+                }
+                did = 'DEV-' + hash.toString(36).toUpperCase();
+                localStorage.setItem(DEVICE_ID_KEY, did);
+            }
+            return did;
+        }
+
+        let currentDeviceId = getOrCreateDeviceId();
+
+        // Tìm entry theo device ID (để tra cứu khi IP đổi)
+        function findEntryByDeviceId(ipData, deviceId) {
+            for (const [ip, info] of Object.entries(ipData)) {
+                if (info.deviceId === deviceId) return { ip, info };
+            }
+            return null;
         }
 
         // Lấy IP thực của người dùng
@@ -972,28 +1031,56 @@
             currentIP = await fetchIP();
             const ipData = loadIPData();
 
-            // Hiển thị IP trên màn hình mật khẩu
+            // Hiển thị IP + DeviceId trên màn hình mật khẩu
             const pwIpInfo = document.getElementById('pw-ip-info');
-            if (pwIpInfo) pwIpInfo.textContent = 'IP của bạn: ' + currentIP;
+            if (pwIpInfo) pwIpInfo.textContent = 'IP: ' + currentIP + '  |  Máy: ' + currentDeviceId;
 
-            // Nếu IP chưa có trong danh sách, tự thêm với status pending
-            if (!ipData[currentIP]) {
-                ipData[currentIP] = {
-                    name: '',
-                    status: 'pending',
-                    firstSeen: new Date().toISOString(),
-                    lastSeen: new Date().toISOString()
-                };
-                saveIPData(ipData);
+            // ── Tra cứu theo Device ID trước (ưu tiên hơn IP) ────────
+            const matchByDevice = findEntryByDeviceId(ipData, currentDeviceId);
+
+            if (matchByDevice) {
+                const { ip: oldIP, info: deviceInfo } = matchByDevice;
+
+                if (deviceInfo.status === 'block') {
+                    document.getElementById('password-overlay').style.display = 'none';
+                    showBlockedPage(deviceInfo.name || currentDeviceId);
+                    return;
+                }
+
+                // Nếu IP đã thay đổi (đổi mạng) → cập nhật IP trong record
+                if (oldIP !== currentIP) {
+                    const updatedInfo = { ...deviceInfo, lastSeen: new Date().toISOString(), lastIP: currentIP };
+                    delete ipData[oldIP];
+                    ipData[currentIP] = updatedInfo;
+                    saveIPData(ipData);
+                } else {
+                    ipData[currentIP].lastSeen = new Date().toISOString();
+                    saveIPData(ipData);
+                }
+
             } else {
-                ipData[currentIP].lastSeen = new Date().toISOString();
+                // ── Thiết bị mới: thêm vào danh sách với status pending ──
+                if (!ipData[currentIP]) {
+                    ipData[currentIP] = {
+                        name: '',
+                        deviceId: currentDeviceId,
+                        status: 'pending',
+                        firstSeen: new Date().toISOString(),
+                        lastSeen: new Date().toISOString()
+                    };
+                } else {
+                    // IP đã tồn tại nhưng không có deviceId → gán deviceId
+                    if (!ipData[currentIP].deviceId) {
+                        ipData[currentIP].deviceId = currentDeviceId;
+                    }
+                    ipData[currentIP].lastSeen = new Date().toISOString();
+                }
                 saveIPData(ipData);
             }
 
-            // Kiểm tra trạng thái IP
+            // Kiểm tra trạng thái IP hiện tại
             const entry = ipData[currentIP];
-            if (entry.status === 'block') {
-                // Hiện trang bị chặn
+            if (entry && entry.status === 'block') {
                 document.getElementById('password-overlay').style.display = 'none';
                 showBlockedPage(entry.name || currentIP);
                 return;
@@ -1063,8 +1150,10 @@
         function openAdminPanel() {
             const panel = document.getElementById('admin-panel');
             panel.style.display = 'block';
-            // Hiển thị IP hiện tại
+            // Hiển thị IP + DeviceId hiện tại
             document.getElementById('admin-my-ip').textContent = currentIP || 'Đang tải...';
+            const hostnameEl = document.getElementById('admin-my-hostname');
+            if (hostnameEl) hostnameEl.textContent = '💻 ' + currentDeviceId;
             const ipData = loadIPData();
             const entry = ipData[currentIP] || {};
             const statusEl = document.getElementById('admin-my-status');
@@ -1075,6 +1164,44 @@
 
         function closeAdminPanel() {
             document.getElementById('admin-panel').style.display = 'none';
+        }
+
+        // Reset IP hiện tại → xóa record cũ, thiết bị sẽ đăng ký lại với IP mới
+        function adminResetMyIP() {
+            if (!confirm('Reset IP của máy này?\nThao tác này sẽ xóa liên kết giữa IP cũ và tên máy.\nSau khi reload, IP mới sẽ được cập nhật tự động.')) return;
+            const ipData = loadIPData();
+            // Tìm và xóa entry gắn với deviceId này
+            const match = findEntryByDeviceId(ipData, currentDeviceId);
+            if (match) {
+                const savedName = match.info.name;
+                const savedStatus = match.info.status;
+                delete ipData[match.ip];
+                // Thêm lại với IP mới (trang sẽ reload nên currentIP là IP mới)
+                // Giữ tên và trạng thái cũ
+                ipData[currentIP] = {
+                    name: savedName,
+                    deviceId: currentDeviceId,
+                    status: savedStatus,
+                    firstSeen: new Date().toISOString(),
+                    lastSeen: new Date().toISOString()
+                };
+                saveIPData(ipData);
+                showToast('✅ Đã cập nhật IP mới: ' + currentIP);
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('⚠️ Không tìm thấy record của máy này.');
+            }
+        }
+
+        // Reset cả device ID lẫn IP → thiết bị sẽ được coi là máy mới
+        function adminResetDeviceId() {
+            if (!confirm('⚠️ CẢNH BÁO: Thao tác này sẽ xóa hoàn toàn nhận dạng máy này!\nMáy sẽ trở thành thiết bị mới với status PENDING.\n\nBạn có chắc chưa?')) return;
+            const ipData = loadIPData();
+            const match = findEntryByDeviceId(ipData, currentDeviceId);
+            if (match) { delete ipData[match.ip]; saveIPData(ipData); }
+            localStorage.removeItem(DEVICE_ID_KEY);
+            showToast('🔄 Đã reset! Đang tải lại...');
+            setTimeout(() => location.reload(), 1000);
         }
 
         function renderAdminIPList() {
@@ -1101,10 +1228,14 @@
                 const statusText = (info.status || 'pending') === 'accept' ? '✅ ACCEPT'
                     : (info.status === 'block' ? '🚫 BLOCK' : '⏳ PENDING');
                 const lastSeen = info.lastSeen ? new Date(info.lastSeen).toLocaleString('vi-VN') : '--';
+                const deviceBadge = info.deviceId
+                    ? `<span class="hostname-badge" title="Device ID">💻 ${info.deviceId}</span>`
+                    : `<span style="font-size:0.72rem;color:#475569;">📡 Chưa có Device ID</span>`;
 
                 return `
                     <div class="ip-row" id="row-${ip.replace(/[.:]/g, '_')}">
                         <span class="ip-badge">${ip}${isCurrent ? ' <span style="color:#fbbf24;font-size:0.7rem;">(bạn)</span>' : ''}</span>
+                        ${deviceBadge}
                         <span class="ip-name-tag">${info.name ? '👤 ' + info.name : '<em style="color:#334155;">Chưa đặt tên</em>'}</span>
                         <span class="status-badge ${statusClass}">${statusText}</span>
                         <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
