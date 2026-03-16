@@ -1137,7 +1137,7 @@
         function checkLessonPassword() {
             const val = document.getElementById('lesson-pw-input').value.trim();
             const errEl = document.getElementById('lesson-pw-error');
-            if (val === LESSON_PASSWORD) {
+            if (val === LESSON_PASSWORD || val === ADMIN_PASSWORD) {
                 errEl.textContent = '';
                 sessionStorage.setItem('sinh_access', '1');
                 // Đánh dấu IP là accepted khi nhập đúng mật khẩu
